@@ -1,0 +1,47 @@
+\section{Markov Chains}
+\begin{prp}
+Consider a sequence $(a_n)$ of positive numbers which is converging to $a^*$ and a convergent series with running term $b_n$. The convolution 
+\begin{align*}
+    \lim_{n \rightarrow \infty} \sum_{j=1}^{n}a_j b_{n-j} = a^* \sum_{j=1}^{\infty}b_j.
+\end{align*}
+    
+\end{prp}
+
+\begin{thm}
+[Convergence of Markov Chains]
+Let $(X_n)$ be a Harris positive chain on $\mathcal{X}$ and denumerable, and  if there exists an ergodic atom $\alpha \subseteq \mathcal{X}$, then, for every $x \in \mathcal{X}$,
+\begin{equation*}
+    \lim_{n \rightarrow \infty} \| K^n(x,\cdot) - \pi \|_{TV} = 0
+\end{equation*}
+\end{thm}
+\begin{proof}
+We start by deriving composition formula \textit{"first entrance and last exist"} which relates $K^n(x,y)$ to the last visit to $\alpha$.
+Intuitively, 
+\begin{align*}
+K^n(x,y) = P_x(X_n = y, \tau_\alpha \geq n) + P_x(X_n = y, \tau_\alpha < n).
+\end{align*}
+Furthermore
+\begin{align*}
+    P_x(X_n = y, \tau_\alpha < n) = \sum_{j=1}^{n-1} P_x(X_n = y, \tau_\alpha \leq j) \\
+    = \sum_{j=1}^{n-1} \left [\sum_{k=1}^j P_x(X_k \in \alpha, \tau \geq k)K^{j-k}(\alpha, \alpha) \right ]
+    P_\alpha(X_{n-j} = y, \tau_\alpha \geq n - j)
+\end{align*}
+Where $k$ is the time of entrance into $\alpha$ and $j$ is the time of exit from $\alpha$. \\
+Using experssion (6.17) 
+\begin{align}
+    \pi (y) = \pi (\alpha) \sum_{j=1}^{\infty}P_\alpha(X_j = y, \tau_\alpha \geq j) \label{eq:inv_msr}
+\end{align}
+Combinning these two leads to 
+\begin{align*}
+    \| K^n(x,y) - \pi \|_{TV} = \sum_{y \in \mathcal{X}}| K^n(x,y) - \pi (y)| \\
+    =  \sum_{y \in \mathcal{X}} P_x(X_n = y, \tau_\alpha \geq n) 
+\\ + \sum_{y \in \mathcal{X}} \sum_{j=1}^{n-1} \sum_{k=1}^{j} |P_x(X_k \in \alpha, \tau = k) K^{j-k}(\alpha, \alpha) - \pi (\alpha)| 
+\\ P_\alpha(X_{n-j} = y, \tau_\alpha \geq n-j) 
+\\ + \sum_{y \in \mathcal{X}} \pi (\alpha) \sum_{j=n}^{\infty} P_\alpha(X_j = y, \tau_\alpha \geq j).
+\end{align*}
+From Harris Positivity and Proposition 6.33 we know that the first term goes to $0$ with n. The third term goes to zero as the tail of the convergent series from \eqref{eq:inv_msr}. Furthermore, the middle term can be rewritten as 
+\begin{align}
+    \sum_{y \in \mathcal{X}} \sum_{j=1}^{n-1} a_n b_{n-j} \label{eq:conv_prop}
+\end{align}
+ With the sequence $a_n = \sum_{k=1}^{n} |P_x(X_k \in \alpha, \tau = k) K^{n-k}(\alpha, \alpha) - \pi (\alpha)|$ converging to $0$ because $\alpha$ is an ergodic atom and $b_{n} = P_\alpha(X_{n} = y, \tau_\alpha \geq n)$ being a convergent series as mentioned in \eqref{eq:inv_msr}. The convergence of follows from Proposition 1
+\end{proof}
