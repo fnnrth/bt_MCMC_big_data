@@ -15,19 +15,12 @@ class ConsensusMH(MetropolisHastings):
         self.num_batches = num_batches
 
     def run(self, T, theta):
-        if __name__ == '__main__':
-            S = torch.zeros(T, self.num_batches, theta.size(0))
-            S[0,:] = theta.repat(self.num_batches, 1)
-            batches_data = self.create_batches()
-            args = [(T, theta, batch) for batch in batches_data]
-            with multiprocessing.Pool(num_processes) as pool:
-                
-                results = pool.map(self.run_batch, args)
-
-
-            #     for i in range(T-1):
-            #         S[i+1,:] = self.mh_step(S[i,:], data)
-            # return S
+        S = torch.zeros(T, self.num_batches, theta.size(0))
+        S[0,:] = theta.repeat(self.num_batches, 1)
+        batches_data = self.create_batches()
+        args = [(T, theta, batch) for batch in batches_data]
+        with mp.Pool(self.num_batches) as pool:            
+            results = pool.starmap(self.run_batch, args)
 
     def run_batch(self, T, theta, batch):
         S = torch.zeros(T, theta.size(0))
@@ -49,12 +42,16 @@ class ConsensusMH(MetropolisHastings):
         batches_data = [self.dataset[batch] for batch in batches]
         return batches_data
 
-x = torch.randn(1000)
-cons = ConsensusMH(dataset = x, num_batches=4)
+if __name__ == '__main__':
+    x = torch.randn(1000)
+    map = torch.tensor([1,2])
+    cons = ConsensusMH(dataset = x, num_batches=10)
 
-start_time = time.time()
-S = cons.run(10000, map)
-end_time = time.time()
-execution_time = end_time - start_time
-print(f"Execution time: {execution_time:.6f} seconds")
-sns.jointplot(x=S[:,0],y=S[:,1])
+    start_time = time.time()
+    S = cons.run(10000, map)
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"Main Programm Execution time: {execution_time:.6f} seconds")
+    #sns.jointplot(x=S[:,0],y=S[:,1])
+    for i in range(50):
+        pass
