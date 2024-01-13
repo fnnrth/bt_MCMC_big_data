@@ -20,7 +20,9 @@ class ConsensusMH(MetropolisHastings):
         batches_data = self.create_batches()
         args = [(T, theta, batch) for batch in batches_data]
         with mp.Pool(self.num_batches) as pool:            
-            results = pool.starmap(self.run_batch, args)
+            batch_sample_list = pool.starmap(self.run_batch, args)
+        
+        return self.combine_batches(batch_sample_list)
 
     def run_batch(self, T, theta, batch):
         S = torch.zeros(T, theta.size(0))
@@ -42,16 +44,23 @@ class ConsensusMH(MetropolisHastings):
         batches_data = [self.dataset[batch] for batch in batches]
         return batches_data
 
+    def combine_batches(self, batch_sample_list):
+        stacked_tensor = torch.stack(batch_sample_list, dim=0)
+        # Compute the mean along the specified dimension (0 in this case)
+        average_tensor = torch.mean(stacked_tensor, dim=0)
+        return average_tensor
+
 if __name__ == '__main__':
-    x = torch.randn(1000)
+    x = torch.randn(10000)
     map = torch.tensor([1,2])
-    cons = ConsensusMH(dataset = x, num_batches=10)
+    cons = ConsensusMH(dataset = x, num_batches=1)
 
     start_time = time.time()
-    S = cons.run(10000, map)
+    S = cons.run(100000, map)
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Main Programm Execution time: {execution_time:.6f} seconds")
+    print(S)
     #sns.jointplot(x=S[:,0],y=S[:,1])
     for i in range(50):
         pass
