@@ -1,5 +1,13 @@
 from MetropolisHastings import MetropolisHastings
 
+import torch
+import torch.multiprocessing as mp
+import concurrent.futures
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import time
+
 class ConsensusMH(MetropolisHastings):
     def __init__(self, dataset, num_batches):
         self.dataset = dataset
@@ -40,3 +48,13 @@ class ConsensusMH(MetropolisHastings):
         # Extract batches from input_tensor using shuffled indices
         batches_data = [self.dataset[batch] for batch in batches]
         return batches_data
+
+x = torch.randn(1000)
+cons = ConsensusMH(dataset = x, num_batches=4)
+
+start_time = time.time()
+S = cons.run(10000, map)
+end_time = time.time()
+execution_time = end_time - start_time
+print(f"Execution time: {execution_time:.6f} seconds")
+sns.jointplot(x=S[:,0],y=S[:,1])

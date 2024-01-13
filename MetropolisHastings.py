@@ -39,14 +39,14 @@ class MetropolisHastings():
     def get_stepsize(self):
         return 0.5/torch.sqrt(torch.tensor([self.N])) # 0.5/sqrt(N)
 
-# x = torch.randn(1000)
-# map = torch.tensor([1,2])
-# vanill = MetropolisHastings(x)
+x = torch.randn(1000)
+map = torch.tensor([1,2])
+vanill = MetropolisHastings(x)
 
-# start_time = time.time()
-# run_vanill = vanill.run(10000, map, x)
-# end_time = time.time()
-# execution_time = end_time - start_time
-# print(f"Execution time: {execution_time:.6f} seconds")
+start_time = time.time()
+run_vanill = vanill.run(10000, map, x)
+end_time = time.time()
+execution_time = end_time - start_time
+print(f"Execution time: {execution_time:.6f} seconds")
 
-# sns.jointplot(x=run_vanill[:,0],y=run_vanill[:,1])
+sns.jointplot(x=run_vanill[:,0],y=run_vanill[:,1])
