@@ -37,3 +37,5 @@ class MetropolisHastings():
 
     def get_stepsize(self):
         return 0.5/np.sqrt(self.N) # 0.5/sqrt(N)
+
+        
