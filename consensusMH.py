@@ -13,7 +13,7 @@ class ConsensusMH(MetropolisHastings):
 
     def run(self, T, theta):
         S = np.zeros((T, self.num_batches, theta.size))
-        S[0,:] = np.repeat(theta,self.num_batches, axis=0)
+        S[0,:] = np.tile(theta, (self.num_batches, 1))
         batches_data = self.create_batches()
         args = [(T, theta, batch) for batch in batches_data]
         with mp.Pool(self.num_batches) as pool:            
