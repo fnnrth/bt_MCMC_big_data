@@ -15,24 +15,27 @@ class FlyMH(MetropolisHastings):
         S = torch.zeros((T, theta.size))
         S[0,:] = theta
         for i in range(T-1):
-            subset_data = self.subset_data()
+            bright_indx = self.get_bright_indx()
             S[i+1,:] = self.mh_step(S[i,:], subset_data)
         return S
 
-    def subset_data(self):
-        numResampledZs = int(np.ceil(N*resampleFraction))
-        resample_ind = torch.randint(0, self.N, size=numResampledZs)
-        subset_data = np.zeros(N)
+    def get_bright_indx(self):
+        numResampledZs = int(np.ceil(N*self.sample_fraction))
+        resample_ind = npr.randint(0, self.N, size=numResampledZs)
+        bright_indx = np.zeros(self.N)
 
-        subset_data[resampledInds] = npr.binomial(n=1,p=0.5, size=numResampledZs)
+        bright_indx[resampledInds] = npr.binomial(n=1,p=self.get_dark_probability, size=numResampledZs)
 
-    def get_log_lkhd(self, theta, data):
-        pass
+    def get_log_lkhd(self, theta, bright_indx):
+            return -(((self.dataset[bright_indx] - theta[0])/theta[1])**2)/2 - np.log(theta[1])
+
+    def get_log_alpha(self, theta, theta_new, bright_indx):
+        lkhd = (self.get_log_lkhd(theta_new, bright_indx) - self.get_log_lkhd(theta, bright_indx)) # lkhd_new - lkhd_old
+        return np.mean(lkhd)
 
     def bounding_function(self, theta):
         pass
 
     def get_dark_probability(self, theta):
         return 0.5 # Not implemented yet
-
-#r
+        # 1 - self.get_log_lhd(theta, )
