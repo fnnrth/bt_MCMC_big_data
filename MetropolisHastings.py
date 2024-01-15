@@ -1,5 +1,3 @@
-import torch
-import torch.multiprocessing as mp
 import concurrent.futures
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -9,11 +7,11 @@ import time
 
 class MetropolisHastings():
     def __init__(self, dataset):
-        #self.dataset = dataset
-        self.N = dataset.size(0)
+        self.dataset = dataset
+        self.N = dataset.size
 
     def run(self, T, theta, data):
-        S = np.zeros(T, theta.size(0))
+        S = np.zeros((T, theta.size))
         S[0,:] = theta
         for i in range(T-1):
             S[i+1,:] = self.mh_step(S[i,:], data)
@@ -22,7 +20,7 @@ class MetropolisHastings():
     def mh_step(self, theta, data):
         theta_new = self.get_theta_new(theta)
         log_alpha = self.get_log_alpha(theta, theta_new, data)
-        log_u = np.log(npr.rand(1))/ data.size(0)
+        log_u = np.log(npr.rand(1))/ data.size
         if log_u < log_alpha:
             theta = theta_new
         return theta
