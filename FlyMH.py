@@ -34,3 +34,5 @@ class FlyMH(MetropolisHastings):
 
     def get_dark_probability(self, theta):
         return 0.5 # Not implemented yet
+
+#r
