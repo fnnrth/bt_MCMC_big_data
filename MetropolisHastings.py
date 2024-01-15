@@ -1,4 +1,3 @@
-import concurrent.futures
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -38,4 +37,3 @@ class MetropolisHastings():
     def get_stepsize(self):
         return 0.5/np.sqrt(self.N) # 0.5/sqrt(N)
 
-        
