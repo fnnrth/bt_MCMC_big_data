@@ -9,11 +9,11 @@ class MetropolisHastings():
         self.dataset = dataset
         self.N = dataset.size
 
-    def run(self, T, theta, data):
+    def run(self, T, theta):
         S = np.zeros((T, theta.size))
         S[0,:] = theta
         for i in range(T-1):
-            S[i+1,:] = self.mh_step(S[i,:], data)
+            S[i+1,:] = self.mh_step(S[i,:], self.dataset)
         return S
 
     def mh_step(self, theta, data):

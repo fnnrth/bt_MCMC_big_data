@@ -4,6 +4,7 @@ import multiprocessing as mp
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import numpy.random as npr
 import time
 
 class ConsensusMH(MetropolisHastings):
