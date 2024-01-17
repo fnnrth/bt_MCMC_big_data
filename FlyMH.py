@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import numpy.random as npr
 import time
 
 from MetropolisHastings import MetropolisHastings
@@ -8,34 +9,44 @@ from MetropolisHastings import MetropolisHastings
 class FlyMH(MetropolisHastings):
 
     def __init__(self, dataset, sample_fraction):
-        super.__init__(dataset)
+        super().__init__(dataset)
         self.sample_fraction = sample_fraction
 
-    def run(self):
-        S = torch.zeros((T, theta.size))
+    def run(self, T, theta):
+        S = np.zeros((T, theta.size))
         S[0,:] = theta
         for i in range(T-1):
-            bright_indx = self.get_bright_indx()
-            S[i+1,:] = self.mh_step(S[i,:], subset_data)
+            bright_data = self.get_bright_indx(S[i,:])
+            S[i+1,:] = self.mh_step(S[i,:], bright_data)
         return S
 
-    def get_bright_indx(self):
-        numResampledZs = int(np.ceil(N*self.sample_fraction))
-        resample_ind = npr.randint(0, self.N, size=numResampledZs)
-        bright_indx = np.zeros(self.N)
+    def get_bright_indx(self, theta):
+        numResampledZs = int(np.ceil(self.N*self.sample_fraction))
+        subset_sample_indx = npr.randint(0, self.N, size=numResampledZs)
+        subset_sample_dp = self.dataset[subset_sample_indx]
+        p = self.get_bright_prob(theta)
+        bernoulli_sample_indx = npr.binomial(n=1,p=p, size=numResampledZs)
+        sample_dp = subset_sample_dp[bernoulli_sample_indx == 1]
+        return sample_dp
 
-        bright_indx[resampledInds] = npr.binomial(n=1,p=self.get_dark_probability, size=numResampledZs)
+    def get_log_alpha(self, theta, theta_new, data):
+        log_lkhd_new = np.log(self.get_lkhd(theta_new, data)/ self.bounding_function(theta_new) -1)
+        log_lkhd_old = np.log(self.get_lkhd(theta, data) / self.bounding_function(theta) - 1)
+        lkhd = log_lkhd_new - log_lkhd_old
+        log_bounding = self.bounding_function(theta_new) - self.bounding_function(theta)
+        return np.mean(log_bounding - lkhd)
 
-    def get_log_lkhd(self, theta, bright_indx):
-            return -(((self.dataset[bright_indx] - theta[0])/theta[1])**2)/2 - np.log(theta[1])
-
-    def get_log_alpha(self, theta, theta_new, bright_indx):
-        lkhd = (self.get_log_lkhd(theta_new, bright_indx) - self.get_log_lkhd(theta, bright_indx)) # lkhd_new - lkhd_old
-        return np.mean(lkhd)
+    def get_lkhd(self, theta, data):
+        return 1/(theta[1]*np.sqrt(2*np.pi)) * np.exp(-(((data - theta[0])/theta[1])**2)/2)
 
     def bounding_function(self, theta):
-        pass
+        return 0.01 # Not implemented yet
 
-    def get_dark_probability(self, theta):
+    def get_bright_prob(self, theta):
         return 0.5 # Not implemented yet
-        # 1 - self.get_log_lhd(theta, )
+
+x = npr.randn(1000)
+theta = np.array([1,2])
+test = FlyMH(x, 0.1)
+test_run = test.run(100, theta)
+print(test_run)
