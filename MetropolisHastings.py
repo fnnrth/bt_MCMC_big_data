@@ -32,7 +32,7 @@ class MetropolisHastings():
         return np.mean(lkhd)
 
     def get_log_lkhd(self, theta, data):
-        return -(((data - theta[0])/theta[1])**2)/2 - np.log(theta[1]) # -((data-mu)/sig)**2 - log(sig)
+        return -(((data - theta[0])/theta[1])**2)/2 - np.log(theta[1]*np.sqrt(np.pi*2)) - # -((data-mu)/sig)**2 - log(sig)
 
     def get_stepsize(self):
         return 0.5/np.sqrt(self.N) # 0.5/sqrt(N)

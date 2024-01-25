@@ -13,7 +13,7 @@ class csMALA(MetropolisHastings):
         self.dataset = dataset
         self.batch_percentage = batch_percentage
         self.inv_temp = self.N*(2-self.batch_percentage)
-        self.learn_rate = 10**(-4)/self.batch_percentage
+        self.learn_rate = 0.5/np.sqrt(self.N)
         self.std = 0.1
         self.corr_param = 0
         
@@ -67,7 +67,7 @@ class csMALA(MetropolisHastings):
         r_delta = (data - theta[0])/(2*theta[1]**2)
         return np.mean(r_delta)
 
-x = npr.randn(1000)
+x = npr.randn(10000)
 theta = np.array([0.1,1.1])
 test = csMALA(x, 0.5)
 test_run = test.run(100, theta)
