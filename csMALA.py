@@ -64,8 +64,8 @@ class csMALA(MetropolisHastings):
         return [r, r_delta] # Not finished
 
     def get_r_delta(self, theta, data):
-        r_delta_mu = np.mean((data - theta[0])/(np.exp(theta[1])**2))
-        r_delta_sig = np.mean(-1/np.exp(theta[1]) + ((data - theta[0])**2)/np.exp(theta[1])**3)
+        r_delta_mu = np.mean((data - theta[0])/(theta[1]**2))
+        r_delta_sig = np.mean(-1/theta[1] + ((data - theta[0])**2)/theta[1]**3)
         return np.array([r_delta_mu, r_delta_sig])
 
 x = npr.randn(10000)
