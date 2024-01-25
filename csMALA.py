@@ -12,11 +12,11 @@ class csMALA(MetropolisHastings):
         super().__init__(dataset)
         self.dataset = dataset
         self.batch_percentage = batch_percentage
-        self.inv_temp = 1
-        self.learn_rate = 0.1
-        self.std = 1
+        self.inv_temp = self.N*(2-self.batch_percentage)
+        self.learn_rate = 10**(-4)/self.batch_percentage
+        self.std = 0.1
         self.corr_param = 0
-
+        
     def run(self, T, theta):
         S = np.zeros((T, theta.size))
         S[0,:] = theta
@@ -43,6 +43,8 @@ class csMALA(MetropolisHastings):
         return self.dataset[subset_indx == 1]
 
     def get_theta_new(self, theta, r):
+        print(f"location: {theta - self.learn_rate*r[1]}")
+        print(f"theta_new:{npr.normal(loc=theta - self.learn_rate*r[1], scale = self.std)}")
         return npr.normal(loc=theta - self.learn_rate*r[1], scale = self.std)
 
     def get_log_alpha(self, theta, r, theta_new, r_new):
@@ -50,20 +52,23 @@ class csMALA(MetropolisHastings):
         old_diff = npl.norm(theta_new - theta + self.learn_rate*r[1]) 
         new_diff = npl.norm(theta - theta_new + self.learn_rate*r_new[1])
         alpha = np.exp(r_diff + (new_diff - old_diff)/(2*self.std**2))
+        print(f"alpha: {alpha}")
         return alpha
 
     def get_r(self, theta, data):
-        correction_term = data.size*self.corr_param * np.log(self.batch_percentage)/self.learn_rate 
+        correction_term = data.size*self.corr_param * np.log(self.batch_percentage)/self.learn_rate
+        print(f"corr_term: {correction_term}") 
         r = np.mean(self.get_log_lkhd(theta, data)) + correction_term
         r_delta = self.get_r_delta(theta, data)
+        print(f"r: {np.array([r, r_delta])}")
         return np.array([r, r_delta]) # Not finished
 
     def get_r_delta(self, theta, data):
         r_delta = (data - theta[0])/(2*theta[1]**2)
         return np.mean(r_delta)
 
-x = npr.randn(10000)
-theta = np.array([1,2])
+x = npr.randn(1000)
+theta = np.array([0.1,1.1])
 test = csMALA(x, 0.5)
 test_run = test.run(100, theta)
 print(test_run)
