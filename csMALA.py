@@ -8,6 +8,9 @@ import time
 from MetropolisHastings import MetropolisHastings
 
 class csMALA(MetropolisHastings):
+    '''
+    Class implementing the corrected stochastic MALA Algorithm
+    '''
     def __init__(self, dataset, batch_percentage):
         super().__init__(dataset)
         self.dataset = dataset
@@ -18,6 +21,15 @@ class csMALA(MetropolisHastings):
         self.corr_param = 0.00000
         
     def run(self, T, theta):
+        '''
+        Run the algorithm
+        Args:
+            - T (int): number of iterations
+            - theta (np.array): starting point for algorithm
+
+        Returns:
+            (np.array) Array with sample for bayesian inference
+        '''
         S = np.zeros((T, theta.size))
         S[0,:] = theta
         r = self.get_r(theta, self.take_subset())
