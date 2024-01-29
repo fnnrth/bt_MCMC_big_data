@@ -74,7 +74,7 @@ class MetropolisHastings():
             log(alpha) = mean(log_likelihood(theta_new) - log_likelihood(theta))
         '''
         lkhd = self.get_log_lkhd(theta_new, data) - self.get_log_lkhd(theta, data)
-        return np.mean(lkhd)
+        return lkhd
 
     def get_log_lkhd(self, theta, data):
         '''
@@ -88,7 +88,8 @@ class MetropolisHastings():
         Notes:
              l(theta) = -(((datapoint-mu)/sig)**2)/2) - log(sig*sqrt(pi*2))
         '''
-        return -(((data - theta[0])/theta)[1]**2)/2 - np.log(theta[1]*np.sqrt(np.pi*2))
+        mean_diff = np.mean((data - theta[0])**2)
+        return -((mean_diff)/theta[1]**2)/2 - np.log(theta[1]*np.sqrt(np.pi*2))
 
     def get_stepsize(self):
         '''
