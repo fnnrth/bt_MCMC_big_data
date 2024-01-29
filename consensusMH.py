@@ -30,7 +30,7 @@ class ConsensusMH(MetropolisHastings):
         batches_data = self.create_batches() # Create list of batches of data
         args = [(T, theta, batch) for batch in batches_data] # List of arguments to run MH in parallel
         with mp.Pool(self.num_batches) as pool: # Parallel enviorenment        
-            batch_sample_list = pool.starmap(super.run, args) # Run MH in parallel with all batches
+            batch_sample_list = pool.starmap(super.run(), args) # Run MH in parallel with all batches
         
         return self.combine_batches(batch_sample_list)  # Combine samples returned by batches
 
