@@ -29,8 +29,9 @@ class ConsensusMH(MetropolisHastings):
         '''
         batches_data = self.create_batches() # Create list of batches of data
         args = [(T, theta, batch) for batch in batches_data] # List of arguments to run MH in parallel
+        mh_instace = MetropolisHastings(self.dataset)
         with mp.Pool(self.num_batches) as pool: # Parallel enviorenment        
-            batch_sample_list = pool.starmap(super.run(), args) # Run MH in parallel with all batches
+            batch_sample_list = pool.starmap(mh_instace.run, args) # Run MH in parallel with all batches
         
         return self.combine_batches(batch_sample_list)  # Combine samples returned by batches
 
@@ -48,5 +49,5 @@ class ConsensusMH(MetropolisHastings):
         '''
         '''
         stacked_array = np.stack(batch_sample_list, axis=0) # Compute the mean along the specified dimension (0 in this case)
-        average_array = np.mean(stacked_tensor, axis=0)
-        return average_tensor
+        average_array = np.mean(stacked_array, axis=0)
+        return average_array

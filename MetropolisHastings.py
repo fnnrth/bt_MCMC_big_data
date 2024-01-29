@@ -12,7 +12,7 @@ class MetropolisHastings():
         self.dataset = dataset
         self.N = dataset.size # Number of datapoints
 
-    def run(self, T, theta):
+    def run(self, T, theta, data):
         '''
         Run the algorithm
         Args:
@@ -25,7 +25,7 @@ class MetropolisHastings():
         S = np.zeros((T, theta.size)) # Initialize empty sampleset
         S[0,:] = theta # First sample is starting point
         for i in range(T-1): # Iterate over number of iterations
-            S[i+1,:] = self.mh_step(S[i,:], self.dataset) # New sample computed by mh_step
+            S[i+1,:] = self.mh_step(S[i,:], data) # New sample computed by mh_step
         return S
 
     def mh_step(self, theta, data):
@@ -43,7 +43,7 @@ class MetropolisHastings():
         '''
         theta_new = self.get_theta_new(theta) # Draw new sample
         log_alpha = self.get_log_alpha(theta, theta_new, data) #Compute Acceptance Prob alpha
-        log_u = np.log(npr.rand(1))/ data.size # Draw sample u between 0 and 1
+        log_u = np.log(npr.rand(1))/ data.size # Draw sample from U([0,1])
         if log_u < log_alpha: # Accept step if u < alpha
             theta = theta_new # Theta_new is new sample
         return theta
