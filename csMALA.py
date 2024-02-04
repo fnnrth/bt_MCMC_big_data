@@ -13,13 +13,26 @@ class csMALA(MetropolisHastings):
     '''
     def __init__(self, dataset, batch_percentage):
         super().__init__(dataset)
+        # Dataset
         self.dataset = dataset
+        #Hyperparameters
         self.batch_percentage = batch_percentage
         self.inv_temp = self.N*(2-self.batch_percentage)
         self.learn_rate = 0.5/np.sqrt(self.N)
         self.std = 0.1
         self.corr_param = 0.000001
-        
+        # Running Information
+        self.batch_curr = None
+        self.R_curr = None
+        self.R_delta_curr = None
+        self.theta_curr = None
+        # Output Information
+        self.S = None
+        self.R = None
+        self.R_delta = None
+        self.alpha = None  
+        self.u = None
+
     def run(self, T, theta):
         '''
         Run the algorithm
@@ -30,17 +43,21 @@ class csMALA(MetropolisHastings):
         Returns:
             (np.array) Array with sample for bayesian inference
         '''
-        S = np.zeros((T, theta.size)) # Initialize empty Sample set
-        S[0,:] = theta # Set first sample to starting point (theta)
-        r = self.get_r(theta, self.take_subset()) # Compute R values for starting point (theta)
-        for i in range(T-1): #T Iterations
-            batch_data = self.take_subset() # Subset data
-            step = self.csMALA_step(S[i,:], r, batch_data) # Do one step of csMALA 
-            S[i+1,:] = step[0] # Save new sample in sample set
-            r = step[1] # Save new R values
-        return S
+        self.alpha = np.zeros(T-1)
+        self.u = np.zeros(T-1)
+        self.S = np.zeros((T, theta.size)) # Initialize empty Sample set
+        self.S[0,:] = theta # Set first sample to starting point (theta)
 
-    def csMALA_step(self, theta, r, data):
+        self.subset_batch_curr()
+        self.R = np.zeros((T, theta.size))
+        self.R[0] = self.get_r(0)
+
+        self.R_delta = np.zeros((T))
+        self.R_delta[0] = self.get_r_delta(0)  
+        for i in range(1,T): #T Iterations
+            step = self.csMALA_step(i) # Do one step of csMALA 
+
+    def csMALA_step(self, i):
         '''
         Run a single step of the algorithm
         Args:
@@ -48,54 +65,69 @@ class csMALA(MetropolisHastings):
             - r (list of np.array): values for r
             - data (np.array): dataset
         '''
-        theta_new = self.get_theta_new(theta, r) # Sample new theta
-        r_new = self.get_r(theta_new, data) # Compute r values for new theta 
-        log_alpha = self.get_log_alpha(theta, r, theta_new, r_new) # Compute Acceptance Ratio
-        log_u = np.log(npr.rand(1))/ data.size # Draw sample from from U([0,1])
-        if log_u < log_alpha:
+        self.subset_batch_curr()
+        self.theta_curr = self.get_theta_new(i) # Sample new theta
+        self.R_curr = self.get_r(i) # Compute r values for new theta 
+        self.R_delta_curr = self.get_r_delta(i)
+        self.get_log_alpha(i-1) # Compute Acceptance Ratio
+        self.u[i-1] = np.log(npr.rand(1))/ data.size # Draw sample from from U([0,1])
+        if self.u[i] < self.alpha[i]:
             # Set new theta and r values
-            theta = theta_new
-            r = r_new
-        return [theta, r]
+            self.S[i] = self.theta_curr
+            self.R[i] = self.R_curr
+            self.R_delta[i] = self.R_delta_curr
 
-    def take_subset(self):
+    def subset_batch_curr(self):
         '''
         Subset dataset
         '''
         subset_indx = npr.binomial(n=1,p=self.batch_percentage, size=self.N)
-        return self.dataset[subset_indx == 1]
+        self.batch_curr = self.dataset[subset_indx == 1]
 
-    def get_theta_new(self, theta, r):
+    def get_theta_new(self, i):
         '''
         Compute new sample for theta
         '''
-        theta_new = npr.normal(loc=theta - self.learn_rate*r[1], scale = self.std)
+        theta = self.S[i-1]
+        R = self.R[i-1]
+        l_r = self.learn_rate
+        theta_new = npr.normal(loc=theta - l_r*R, scale = self.std)
         if theta_new[1] < 0: #Filter cases where sig < 0
             theta_new = theta 
-        return theta_new
+        self.curr_theta = theta_new
 
-    def get_log_alpha(self, theta, r, theta_new, r_new):
+    def get_log_alpha(self, i):
         '''
         Compute Acceptance Ratio
         '''
-        r_diff = self.inv_temp*(r[0] - r_new[0])
-        old_diff = npl.norm(theta_new - theta + self.learn_rate*r[1]) 
-        new_diff = npl.norm(theta - theta_new + self.learn_rate*r_new[1])
-        alpha = np.exp(r_diff + (new_diff - old_diff)/(2*self.std**2))
-        #print(f"alpha: {alpha}")
-        return alpha
+        theta = self.S[i-1]
+        theta_new = self.theta_curr
+        R = self.R[i-1]
+        R_new = self.R_curr
+        l_r = self.learn_rate
 
-    def get_r(self, theta, data):
+        r_diff = self.inv_temp*(R - R_new)
+        old_diff = npl.norm(thet_new - theta + l_r*R) 
+        new_diff = npl.norm(theta - theta_new + l_r*R_new)
+        alpha = np.exp(r_diff + (new_diff - old_diff)/(2*self.std**2))
+        self.alpha[i-1] = alpha
+
+    def get_log_lkhd(self,i):
+        theta = self.S[i-1]
+        data  = self.batch_curr
+
+        mean_diff = np.mean((data - theta[0])**2)
+        return -((mean_diff)/theta[1]**2)/2 - np.log(theta[1]*np.sqrt(np.pi*2))
+
+    def get_r(self, i):
         '''
         Compute R values
         '''
-        correction_term = data.size*self.corr_param * np.log(self.batch_percentage)/self.inv_temp
-        r = self.get_log_lkhd(theta, data) + correction_term
-        r_delta = self.get_r_delta(theta, data)
-        #print(f"r: {[r, r_delta]}")
-        return [r, r_delta] 
+        correction_term = self.batch_curr.size*self.corr_param * np.log(self.batch_percentage)/self.inv_temp
+        r = self.get_log_lkhd(i) + correction_term
+        self.R_curr = r 
 
-    def get_r_delta(self, theta, data):
+    def get_r_delta(self, i):
         '''
         Compute delta_r
         Args: 
@@ -105,20 +137,24 @@ class csMALA(MetropolisHastings):
             r_delta_mu = mean(data-mu)/(sig**2))
             r_delta_sig = mean(-1/sig + ((data - mu)**2)/sig**3)
         '''
+        theta = self.S[i-1]
+        data = self.batch_curr
+
         r_delta_mu = np.mean(data - theta[0])/(theta[1]**2)
         r_delta_sig = -1/theta[1] + np.mean((data - theta[0])**2)/theta[1]**3
-        return np.array([r_delta_mu, r_delta_sig])
+        self.R_delta_curr = np.array([r_delta_mu, r_delta_sig])
+
+    def get_summary(self):
+        print("Summary of last run:")
+        print(f"Minimum S: {np.min(self.S[:,0])}")
+        print(f"Maximum S: {np.max(self.S[:,0])}")
+        print(f"Mean S: {np.mean(self.S[:,0])}")
+        print(f"Standard Deviation S: {np.std(self.S[:,0])}")
+        print(f"Quantiles (25th, 50th, 75th percentile S): {np.quantile(self.S[:,0], [0.25, 0.5, 0.75])}")
+
 
 x = npr.randn(100000)
 theta = np.array([0.1,1.1])
 test = csMALA(x, 0.5)
-test_run = test.run(10000, theta)
-print(test_run)
-
-# Print summary
-print("Summary of the numpy array:")
-print(f"Minimum: {np.min(test_run[:,0])}")
-print(f"Maximum: {np.max(test_run[:,0])}")
-print(f"Mean: {np.mean(test_run[:,0])}")
-print(f"Standard Deviation: {np.std(test_run[:,0])}")
-print(f"Quantiles (25th, 50th, 75th percentile): {np.quantile(test_run[:,0], [0.25, 0.5, 0.75])}")
+test_run = test.run(1000, theta)
+test_data = test_run[0]
