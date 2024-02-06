@@ -41,14 +41,14 @@ class MetropolisHastings():
         Notes:
             Accepts a new sample if u < alpha, returns old sample otherwise
         '''
-        theta_new = self.get_theta_new(theta) # Draw new sample
+        theta_new = self.set_theta_curr(theta) # Draw new sample
         log_alpha = self.get_log_alpha(theta, theta_new, data) #Compute Acceptance Prob alpha
         log_u = np.log(npr.rand(1))/ data.size # Draw sample from U([0,1])
         if log_u < log_alpha: # Accept step if u < alpha
             theta = theta_new # Theta_new is new sample
         return theta
 
-    def get_theta_new(self, theta):
+    def set_theta_curr(self, theta):
         '''
         Get new sample for algorithms
         Args:

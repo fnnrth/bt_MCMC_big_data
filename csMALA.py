@@ -24,7 +24,7 @@ class csMALA(MetropolisHastings):
         # Running Information
         self.batch_curr = None
         self.R_curr = None
-        self.R_delta_curr = None
+        self.R_curr_delta = None
         self.theta_curr = None
         # Output Information
         self.S = None
@@ -49,11 +49,14 @@ class csMALA(MetropolisHastings):
         self.S[0,:] = theta # Set first sample to starting point (theta)
 
         self.subset_batch_curr()
-        self.R = np.zeros((T, theta.size))
-        self.R[0] = self.get_r(0)
 
-        self.R_delta = np.zeros((T))
-        self.R_delta[0] = self.get_r_delta(0)  
+        self.R = np.zeros((T, theta.size))
+        self.set_R_curr(0)
+        self.R[0] = self.R_curr
+
+        self.R_delta = np.zeros((T,theta.size))
+        self.set_R_curr_delta(0)
+        self.R_delta[0] = self.R_curr_delta  
         for i in range(1,T): #T Iterations
             step = self.csMALA_step(i) # Do one step of csMALA 
 
@@ -66,9 +69,9 @@ class csMALA(MetropolisHastings):
             - data (np.array): dataset
         '''
         self.subset_batch_curr()
-        self.theta_curr = self.get_theta_new(i) # Sample new theta
-        self.R_curr = self.get_r(i) # Compute r values for new theta 
-        self.R_delta_curr = self.get_r_delta(i)
+        self.set_theta_curr(i-1) # Sample new theta
+        self.set_R_curr(i-1) # Compute r values for new theta 
+        self.set_R_curr_delta(i-1)
         self.get_log_alpha(i-1) # Compute Acceptance Ratio
         self.u[i-1] = np.log(npr.rand(1))/ data.size # Draw sample from from U([0,1])
         if self.u[i] < self.alpha[i]:
@@ -84,7 +87,7 @@ class csMALA(MetropolisHastings):
         subset_indx = npr.binomial(n=1,p=self.batch_percentage, size=self.N)
         self.batch_curr = self.dataset[subset_indx == 1]
 
-    def get_theta_new(self, i):
+    def set_theta_curr(self, i):
         '''
         Compute new sample for theta
         '''
@@ -94,7 +97,7 @@ class csMALA(MetropolisHastings):
         theta_new = npr.normal(loc=theta - l_r*R, scale = self.std)
         if theta_new[1] < 0: #Filter cases where sig < 0
             theta_new = theta 
-        self.curr_theta = theta_new
+        self.theta_curr = theta_new
 
     def get_log_alpha(self, i):
         '''
@@ -113,13 +116,13 @@ class csMALA(MetropolisHastings):
         self.alpha[i-1] = alpha
 
     def get_log_lkhd(self,i):
-        theta = self.S[i-1]
+        theta = self.S[i]
         data  = self.batch_curr
 
         mean_diff = np.mean((data - theta[0])**2)
         return -((mean_diff)/theta[1]**2)/2 - np.log(theta[1]*np.sqrt(np.pi*2))
 
-    def get_r(self, i):
+    def set_R_curr(self, i):
         '''
         Compute R values
         '''
@@ -127,7 +130,7 @@ class csMALA(MetropolisHastings):
         r = self.get_log_lkhd(i) + correction_term
         self.R_curr = r 
 
-    def get_r_delta(self, i):
+    def set_R_curr_delta(self, i):
         '''
         Compute delta_r
         Args: 
@@ -142,7 +145,7 @@ class csMALA(MetropolisHastings):
 
         r_delta_mu = np.mean(data - theta[0])/(theta[1]**2)
         r_delta_sig = -1/theta[1] + np.mean((data - theta[0])**2)/theta[1]**3
-        self.R_delta_curr = np.array([r_delta_mu, r_delta_sig])
+        self.R_curr_delta = np.array([r_delta_mu, r_delta_sig])
 
     def get_summary(self):
         print("Summary of last run:")
