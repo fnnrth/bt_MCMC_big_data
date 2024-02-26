@@ -58,7 +58,7 @@ class csMALA(MetropolisHastings):
         self.set_R_curr_delta(0)
         self.R_delta[0] = self.R_curr_delta  
         for i in range(1,T): #T Iterations
-            step = self.csMALA_step(i) # Do one step of csMALA 
+            self.csMALA_step(i) # Do one step of csMALA 
 
     def csMALA_step(self, i):
         '''
@@ -72,7 +72,7 @@ class csMALA(MetropolisHastings):
         self.set_theta_curr(i-1) # Sample new theta
         self.set_R_curr(i-1) # Compute r values for new theta 
         self.set_R_curr_delta(i-1)
-        self.get_log_alpha(i-1) # Compute Acceptance Ratio
+        self.set_log_alpha(i-1) # Compute Acceptance Ratio
         self.u[i-1] = np.log(npr.rand(1))/ data.size # Draw sample from from U([0,1])
         if self.u[i] < self.alpha[i]:
             # Set new theta and r values
@@ -99,7 +99,7 @@ class csMALA(MetropolisHastings):
             theta_new = theta 
         self.theta_curr = theta_new
 
-    def get_log_alpha(self, i):
+    def set_log_alpha(self, i):
         '''
         Compute Acceptance Ratio
         '''
@@ -120,7 +120,7 @@ class csMALA(MetropolisHastings):
         data  = self.batch_curr
 
         mean_diff = np.mean((data - theta[0])**2)
-        return -((mean_diff)/theta[1]**2)/2 - np.log(theta[1]*np.sqrt(np.pi*2))
+        return -((mean_diff)/theta[1]**2)/2 - np.log(theta[1])
 
     def set_R_curr(self, i):
         '''
