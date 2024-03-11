@@ -72,7 +72,7 @@ class csMALA(MetropolisHastings):
         self.set_theta_curr(i) # Sample new theta
         self.set_R_curr(i) # Compute r values for new theta 
         self.set_R_curr_delta(i)
-        self.get_log_alpha(i) # Compute Acceptance Ratio
+        self.set_log_alpha(i) # Compute Acceptance Ratio
         self.u[i] = npr.rand(1) # Draw sample from from U([0,1])
         if self.u[i] < self.alpha[i]:
             # Set new theta and r values
