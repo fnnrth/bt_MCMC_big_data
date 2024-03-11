@@ -12,20 +12,25 @@ class FlyMH(MetropolisHastings):
         super().__init__(dataset)
         self.sample_fraction = sample_fraction
 
+        self.S = None
+        self.alpha = None
+        self.u = None
+        self.theta = None
+
     def run(self, T, theta):
-        S = np.zeros((T, theta.size))
-        S[0,:] = theta
+        self.S = np.zeros((T, theta.size))
+        self.S[0] = theta
         for i in range(T-1):
-            bright_data = self.get_bright_indx(S[i,:])
+            bright_data = self.get_bright_indx(S[i])
             S[i+1,:] = self.mh_step(S[i,:], bright_data)
         return S
 
     def get_bright_indx(self, theta):
-        numResampledZs = int(np.ceil(self.N*self.sample_fraction))
-        subset_sample_indx = npr.randint(0, self.N, size=numResampledZs)
+        num_sampled_z = int(np.ceil(self.N*self.sample_fraction))
+        subset_sample_indx = npr.randint(0, self.N, size=num_sampled_z)
         subset_sample_dp = self.dataset[subset_sample_indx]
-        p = self.get_bright_prob(theta)
-        bernoulli_sample_indx = npr.binomial(n=1,p=p, size=numResampledZs)
+        bernoulli_p = self.get_bright_prob(theta)
+        bernoulli_sample_indx = npr.binomial(n=1,p=bernoulli_p, size=num_sampled_z)
         sample_dp = subset_sample_dp[bernoulli_sample_indx == 1]
         return sample_dp
 
@@ -43,7 +48,7 @@ class FlyMH(MetropolisHastings):
         return 0.01 # Not implemented yet
 
     def get_bright_prob(self, theta):
-        return 0.5 # Not implemented yet
+        return 1 - bounding_function(theta)/get_lkhd(theta,self.dataset)
 
 # x = npr.randn(1000)
 # theta = np.array([1,2])
