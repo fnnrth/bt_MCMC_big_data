@@ -60,6 +60,7 @@ class csMALA(MetropolisHastings):
         self.R_delta[0] = self.R_curr_delta  
         for i in range(1,T): #T Iterations
             self.csMALA_step(i) # Do one step of csMALA 
+            self.csMALA_step(i) # Do one step of csMALA 
 
     def csMALA_step(self, i):
         '''
@@ -103,7 +104,7 @@ class csMALA(MetropolisHastings):
             theta_new = theta 
         self.theta_curr = theta_new
 
-    def get_log_alpha(self, i):
+    def set_log_alpha(self, i):
         '''
         Compute Acceptance Ratio
         '''
