@@ -162,34 +162,34 @@ class csMALA(MetropolisHastings):
         print(f"Acceptance Rate: {np.count_nonzero(self.alpha > self.u) / len(self.alpha)}")
 
 
-x = npr.randn(100000)
-theta = np.array([0.1,1.1])
-testMALA = csMALA(x, 1)
-testMALA.run(10000, theta)
-testMALA.get_summary()
+# x = npr.randn(100000)
+# theta = np.array([0.1,1.1])
+# testMALA = csMALA(x, 1)
+# testMALA.run(10000, theta)
+# testMALA.get_summary()
 
-testsMALA = csMALA(x, 0.01)
-testsMALA.run(10000, theta)
-testsMALA.get_summary()
+# testsMALA = csMALA(x, 0.01)
+# testsMALA.run(10000, theta)
+# testsMALA.get_summary()
 
-# Create a figure and axis object
-fig, ax = plt.subplots()
+# # Create a figure and axis object
+# fig, ax = plt.subplots()
 
-# Create a histogram
-ax.hist(data, bins=30, alpha=0.5, color='blue', label='Histogram')
+# # Create a histogram
+# ax.hist(data, bins=30, alpha=0.5, color='blue', label='Histogram')
 
-# Create a line plot
-x = np.linspace(-4, 4, 100)
-y = 100 * np.exp(-x**2 / 2) / np.sqrt(2 * np.pi)
-ax.plot(x, y, color='red', label='Gaussian')
+# # Create a line plot
+# x = np.linspace(-4, 4, 100)
+# y = 100 * np.exp(-x**2 / 2) / np.sqrt(2 * np.pi)
+# ax.plot(x, y, color='red', label='Gaussian')
 
-# Add labels and legend
-ax.set_xlabel('Value')
-ax.set_ylabel('Frequency')
-ax.set_title('Histogram and Gaussian')
+# # Add labels and legend
+# ax.set_xlabel('Value')
+# ax.set_ylabel('Frequency')
+# ax.set_title('Histogram and Gaussian')
 
-# Show legend
-ax.legend()
+# # Show legend
+# ax.legend()
 
-# Show the plot
-plt.show()
+# # Show the plot
+# plt.show()

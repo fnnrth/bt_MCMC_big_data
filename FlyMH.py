@@ -45,8 +45,8 @@ class FlyMH(MetropolisHastings):
     def get_bright_prob(self, theta):
         return 0.5 # Not implemented yet
 
-x = npr.randn(1000)
-theta = np.array([1,2])
-test = FlyMH(x, 0.1)
-test_run = test.run(100, theta)
-print(test_run)
+# x = npr.randn(1000)
+# theta = np.array([1,2])
+# test = FlyMH(x, 0.1)
+# test_run = test.run(100, theta)
+# print(test_run)
