@@ -44,6 +44,20 @@ class FlyMH(MetropolisHastings):
     def get_lkhd(self, theta, data):
         return 1/(theta[1]*np.sqrt(2*np.pi)) * np.exp(-(((data - theta[0])/theta[1])**2)/2)
 
+    def get_gradientVec(self, theta, data):
+        mu = theta[0]
+        sig = theta[1]
+        gradient_mu = -(mu - data)/(sig**2)
+        gradient_sig = -1/sig + ((data - mu)**2)/(sig**3) 
+        return np.array([gradient_mu, gradient_sig])
+
+    def get_hessianVec(self,theta, data):
+            hessian_mu_mu = -1/sig**2
+            hessian_sig_sig = (1 - 3*(mu - data)**2/(sig**2))/sig**2
+            hessian_mu_sig = -2*(data - mu)/sig**3
+
+            return np.array([hessian_mu_mu, hessian_mu_sig],[hessian_mu_sig, hessian_sig_sig])
+
     def bounding_function(self, theta):
         return 0.01 # Not implemented yet
 
