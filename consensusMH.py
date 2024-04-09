@@ -11,8 +11,8 @@ class ConsensusMH(MetropolisHastings):
     '''
     Class implementing Consensus Metropolis Hastings Algorithm
     '''
-    def __init__(self, dataset, num_batches):
-        super().__init__(dataset)
+    def __init__(self, dataset, Likelihood_function, num_batches):
+        super().__init__(dataset, Likelihood_function)
         self.num_batches = num_batches
 
     def run(self, T, theta):
@@ -29,10 +29,11 @@ class ConsensusMH(MetropolisHastings):
         '''
         batches_data = self.create_batches() # Create list of batches of data
         args = [(T, theta, batch) for batch in batches_data] # List of arguments to run MH in parallel
-        mh_instace = MetropolisHastings(self.dataset)
-        with mp.Pool(self.num_batches) as pool: # Parallel enviorenment        
-            batch_sample_list = pool.starmap(mh_instace.run, args) # Run MH in parallel with all batches
-        
+        mh_instace = MetropolisHastings(self.dataset, self.log_lkhd)
+        with mp.Pool(self.num_batches) as pool: # Parallel enviorenment         
+            batch_sample_list = pool.starmap(mh_instace.run, args)
+
+        print(batch_sample_list)
         return self.combine_batches(batch_sample_list)  # Combine samples returned by batches
 
     def create_batches(self):
