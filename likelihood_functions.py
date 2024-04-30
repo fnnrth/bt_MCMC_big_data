@@ -20,17 +20,17 @@ class Norm_lkhd(Likelihood_function):
     def comp_gradient(self, theta, data):
         mu = theta[0]
         sig = theta[1]
-        gradient_mu = -mu - data/(sig**2)
-        gradient_sig = -1/sig + ((data - mu)**2)/(sig**3) 
+        gradient_mu = np.mean(-(mu - data)/(sig**2))
+        gradient_sig = -1/sig + np.mean(((data - mu)**2)/(sig**3)) 
         return np.array([gradient_mu, gradient_sig])
 
     def comp_hessian(self, theta, data):
         mu = theta[0]
         sig = theta[1]
         num_data = data.size    
-        hessian_mu_mu = -1/sig**2 * np.ones(num_data)
+        hessian_mu_mu = np.array(-1/sig**2 * np.ones(num_data))
         hessian_sig_sig = np.array([(1 - 3*(mu - data)**2/(sig**2))/sig**2])
-        hessian_mu_sig = np.array([-2*(data - mu)/sig**3])
+        hessian_mu_sig = np.mean(np.array([-2*(data - mu)/sig**3]))
         return np.array([[hessian_mu_mu, hessian_mu_sig],[hessian_mu_sig, hessian_sig_sig]])
 
 class Norm_2_d_lkhd(Likelihood_function):

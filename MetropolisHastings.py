@@ -9,7 +9,7 @@ class MetropolisHastings():
     def __init__(self, dataset, Likelihood_function):
         self.dataset = dataset
         self.N = dataset.size # Number of datapoints
-        self.stepsize = 0.001
+        self.stepsize = 0.01
         self.log_lkhd = Likelihood_function
         self.S = None
         self.alpha = None
@@ -30,7 +30,7 @@ class MetropolisHastings():
     def mh_step(self, i , data):
         theta = self.S[i]
         theta_new = self.get_theta_curr(theta) # Draw new sample
-        self.get_log_alpha(i, theta, theta_new, data) #Compute Acceptance Prob alpha
+        self.get_alpha(i, theta, theta_new, data) #Compute Acceptance Prob alpha
         u = npr.rand(1) # Draw sample from U([0,1])
         self.accept[i] = u < self.alpha[i]
         if self.accept[i]: # Accept step if u < alpha
@@ -42,7 +42,7 @@ class MetropolisHastings():
     def get_theta_curr(self, theta):
         return theta + self.stepsize*npr.randn(2)
 
-    def get_log_alpha(self, i, theta, theta_new, data):
+    def get_alpha(self, i, theta, theta_new, data):
         self.get_log_lkhd(i+1, theta_new, data)
         alpha = np.exp(self.lkhd[i+1] - self.lkhd[i])
         self.alpha[i] = alpha

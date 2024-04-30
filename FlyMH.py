@@ -37,29 +37,28 @@ class FlyMH(MetropolisHastings):
         num_sampled_z = int(np.ceil(self.N*self.sample_fraction))
         subset_sample_indx = npr.randint(0, self.N, size=num_sampled_z)
         subset_sample_dp = self.dataset[subset_sample_indx]
-        bernoulli_p = self.get_bright_prob(i, subset_sample_dp)
-        bernoulli_sample_indx = npr.binomial(n=1,p=bernoulli_p)
-        sample_dp = subset_sample_dp[bernoulli_sample_indx == 1]
-        return sample_dp
+        #bernoulli_p = self.get_bright_prob(i, subset_sample_dp)
+        #bernoulli_sample_indx = npr.binomial(n=1,p=bernoulli_p)
+        #sample_dp = subset_sample_dp[bernoulli_sample_indx == 1]
+        return subset_sample_dp #Try sampling without lkhd
 
-    def get_alpha(self,i , theta, theta_new, data):
-        lkhd_proposed = self.get_log_lkhd(i, theta_new, data)
-        self.lkhd[i] = lkhd_proposed
-        lkhd_curr = self.lkhd[i-1]
+    def get_alpha(self, i , theta, theta_new, data):
+        self.lkhd[i+1] = self.get_lkhd(theta, data) 
+        lkhd_proposed = self.lkhd[i+1]
+        lkhd_curr = self.lkhd[i]
         self.alpha[i] = np.exp(lkhd_proposed - lkhd_curr)
 
     def get_lkhd(self, theta, data):
-        num_data = data.size
         h = theta - self.thetaMAP
         R = (np.sum(np.abs(h))**3)/6
-        avgLogBound =  np.mean(self.log_lkhdMAP) + np.dot(self.meanGradMAP, h) + .5*np.dot( h, np.dot(self.meanHessMAP.T, h) ) - R
+        avgLogBound =  np.mean(self.log_lkhdMAP) + np.dot(self.meanGradMAP, h) + .5*np.dot(np.dot(self.meanHessMAP.T, h),h) - R
         L = np.exp(self.log_lkhd.comp_func(theta, data))
         B = np.exp(self.log_bounding_function(theta, data))
-        lkhd = avgLogBound + np.sum(np.log(L/B -1))/self.N
-        return lkhd 
+        proxy = L/B - 1
+        lkhd = avgLogBound + np.sum(np.log(np.abs(proxy)))/self.N
+        return lkhd
 
     def log_bounding_function(self, theta, data): #TODO
-
         thetaMAP = self.thetaMAP
         h = theta - thetaMAP
         R = (np.sum(np.abs(h))**3)/6
@@ -74,15 +73,16 @@ class FlyMH(MetropolisHastings):
     def get_bright_prob(self, i, data):
         mu = self.S[i][0]
         sigma = self.S[i][1]
-        logL = -((mu - data)**2)/(2*sigma**2) - np.log(sigma)
-        logB = self.log_bounding_function(i, self.S[i], data)
-        bright_prob = 1 - np.exp(L)/np.exp(B)
+        L = np.exp(-((mu - data)**2)/(2*sigma**2) - np.log(sigma))
+        B = np.exp(self.log_bounding_function(self.S[i], data))
+        bright_prob = 1 - L/B
         bright_prob_bounded = np.clip(bright_prob, 0, 1)
         return bright_prob_bounded
 
 x = npr.randn(10000)
-theta = np.array([0,1])
+theta = np.array([1,2])
 norm_lkhd = Norm_lkhd()
 test = FlyMH(x, norm_lkhd,0.1)
 test_run = test.run(100, theta)
 print(test_run)
+print(test.accept)
