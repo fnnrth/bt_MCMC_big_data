@@ -37,6 +37,5 @@ class Norm_2_d_lkhd(Likelihood_function):
     def comp_func(self, theta, data):
         mu_1 = theta[0]
         mu_2 = theta[1]
-        p = 1/4
-        lkhd = np.exp(np.sum(-p * ((data - mu_1)**2)/(2) - (1-p) * ((data - mu_2)**2)/(2)))
+        lkhd = -((data - mu_1)**2 + (data - mu_2)**2)/2
         return lkhd
