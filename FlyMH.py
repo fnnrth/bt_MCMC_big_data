@@ -81,8 +81,8 @@ class FlyMH(MetropolisHastings):
 
 x = npr.randn(10000)
 theta = np.array([1,2])
-norm_lkhd = Norm_lkhd()
-test = FlyMH(x, norm_lkhd,0.1)
+norm_lkhd = Norm_2_d_lkhd()
+test = MetropolisHastings(x, norm_lkhd,0.1)
 test_run = test.run(100, theta)
 print(test_run)
 print(test.accept)

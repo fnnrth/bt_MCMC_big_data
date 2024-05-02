@@ -50,3 +50,12 @@ class MetropolisHastings():
     def get_log_lkhd(self, i, theta, data):
         self.lkhd[i] =  np.sum(self.log_lkhd.comp_func(theta, data))
 
+x = npr.randn(10000)
+theta = np.array([0,4])
+norm_lkhd = Norm_lkhd()
+test = MetropolisHastings(x, norm_lkhd)
+test.stepsize = 0.1
+test_run = test.run(100, theta, x)
+print(test_run)
+print(test.accept)
+
